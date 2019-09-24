@@ -43,7 +43,6 @@ plugins:
   - trigger
 
   iamsubratp/oss-test-infra:
-  - blunderbuss
   - config-updater
   - golint
   - heart

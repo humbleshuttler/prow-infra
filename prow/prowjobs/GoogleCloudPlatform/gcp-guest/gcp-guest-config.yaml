@@ -1,23 +1,13 @@
-periodics:
-- interval: 10m
-  agent: kubernetes
-  name: echo-test
-  spec:
-    containers:
-    - image: alpine
-      command: ["/bin/date"]
-
 postsubmits:
   iamsubratp/osconfig:
   - name: osconfig-build
-    cluster: gcp-guest
     decorate: true
     spec:
       containers:
       - image: gcr.io/gcp-guest/daisy-builder:latest
         command:
         - "/main.sh"
-        args: ["gcp-guest", "us-west1-a", "./packaging/build_packages_wf.json", "gs://osconfig-agent-package/"]
+        args: ["subratp-project-2", "us-west1-a", "./packaging/build_packages_wf.json", "gs://osconfig-agent-package/"]
         volumeMounts:
         - name: daisy-service-account
           mountPath: /etc/daisy-service-account
@@ -36,10 +26,9 @@ postsubmits:
 presubmits:
   iamsubratp/osconfig:
   - name: osconfig-presubmit-build
-    cluster: gcp-guest
     run_if_changed: ".*/packaging/.*"
     trigger: "(?m)^/packagebuild$"
-    rerun_command: "/packagebuild"
+    rerun_command: "c"
     context: prow/presubmit/packagebuild
     decorate: true
     spec:
@@ -47,7 +36,7 @@ presubmits:
       - image: gcr.io/gcp-guest/daisy-builder:latest
         command:
         - "/main.sh"
-        args: ["gcp-guest", "us-west1-a", "./packaging/build_packages_wf.json"]
+        args: ["subratp-project-2", "us-west1-a", "./packaging/build_packages_wf.json"]
         volumeMounts:
         - name: daisy-service-account
           mountPath: /etc/daisy-service-account
@@ -60,7 +49,6 @@ presubmits:
         secret:
           secretName: daisy-service-account
   - name: osconfig-presubmit-gocheck
-    cluster: gcp-guest
     run_if_changed: ".*\\.go$"
     trigger: "(?m)^/gocheck$"
     rerun_command: "/gocheck"
@@ -73,7 +61,6 @@ presubmits:
         command:
         - "/go/main.sh"
   - name: osconfig-presubmit-gobuild
-    cluster: gcp-guest
     run_if_changed: ".*\\.go$"
     trigger: "(?m)^/gobuild$"
     rerun_command: "/gobuild"
@@ -86,7 +73,6 @@ presubmits:
         command:
         - "/go/main.sh"
   - name: osconfig-presubmit-gotest
-    cluster: gcp-guest
     run_if_changed: ".*\\.go$"
     trigger: "(?m)^/gotest$"
     rerun_command: "/gotest"

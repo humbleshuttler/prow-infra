@@ -12,39 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# These are the usual GKE variables.
-PROJECT       ?= oss-prow
-BUILD_PROJECT ?= oss-prow
-ZONE          ?= us-west1-a
-CLUSTER       ?= prow
-JOB_NAMESPACE ?= test-pods
+PROJECT	?=	subratp-project-2
+ZONE	?=	us-west1-a
 
-export KUBECONFIG
 
-# This prevents the Kube current-context in the execution environment from being
-# overwritten unless the intention is made explicit w/ the `save` parameter.
-# e.g.
-#		make get-cluster-credentials save=true
-.PHONY: save-kubeconfig
-save-kubeconfig:
-ifndef save
-	$(eval KUBECONFIG=$(shell mktemp))
-endif
 
-.PHONY: update-config
-update-config: get-cluster-credentials
-	kubectl create configmap config --from-file=config.yaml=config.yaml --dry-run -o yaml | kubectl replace configmap config -f -
-
-.PHONY: update-plugins
-update-plugins: get-cluster-credentials
-	kubectl create configmap plugins --from-file=plugins.yaml=plugins.yaml --dry-run -o yaml | kubectl replace configmap plugins -f -
-
-.PHONY: deploy
-deploy: get-cluster-credentials
-	kubectl apply -f cluster.yaml
-	kubectl apply -f grandmatriarch.yaml
-	kubectl apply -f cert-manager.yaml
-
-.PHONY: get-cluster-credentials
-get-cluster-credentials: save-kubeconfig
+get-cluster-credentials:
 	gcloud container clusters get-credentials "$(CLUSTER)" --project="$(PROJECT)" --zone="$(ZONE)"
+
+update-plugins: get-cluster-credentials
+    kubectl create configmap plugins --from-file=plugins.yaml=plugins.yaml --dry-run -o yaml | kubectl replace configmap plugins -f -
+
+update-config: get-cluster-credentials
+    kubectl create configmap config --from-file=config.yaml=config.yaml --dry-run -o yaml | kubectl replace configmap config -f -

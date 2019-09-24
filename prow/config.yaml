@@ -12,65 +12,58 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-tide:
-  merge_method:
-    iamsubratp/osconfig: squash
-  target_url: https://prow.subratp.com/tide
-  queries:
-    - repos:
-        - iamsubratp/osconfig
-      labels:
-        - lgtm
-        - approved
-      missingLabels:
-        - do-not-merge
-        - do-not-merge/hold
-        - do-not-merge/work-in-progress
-
 plank:
-  job_url_prefix_config:
-    '*': https://prow.subratp.com/view/gcs/
-  pod_pending_timeout: 60m
   default_decoration_config:
-    timeout: 7200000000000 # 2h
-    grace_period: 15000000000 # 15s
-    utility_images:
+    utility_images: # using the tag we identified above
       clonerefs: "gcr.io/k8s-prow/clonerefs:v20190913-fb0db8137"
       initupload: "gcr.io/k8s-prow/initupload:v20190913-fb0db8137"
       entrypoint: "gcr.io/k8s-prow/entrypoint:v20190913-fb0db8137"
       sidecar: "gcr.io/k8s-prow/sidecar:v20190913-fb0db8137"
     gcs_configuration:
-      bucket: "oss-prow"
-      path_strategy: "explicit"
-    gcs_credentials_secret: "service-account"
-
-sinker:
-  resync_period: 1m
-  max_prowjob_age: 48h
-  max_pod_age: 24h
+      bucket: prow-artifacts-subratp2 # the bucket we just made
+      path_strategy: explicit
+    gcs_credentials_secret: gcs-credentials # the secret we just made
 
 prowjob_namespace: default
-pod_namespace: default
+pod_namespace: test-pods
 log_level: debug
+apiVersion: v1
+data:
+  config.yaml: |
+    # Copyright 2018 Google LLC
+    #
+    # Licensed under the Apache License, Version 2.0 (the "License");
+    # you may not use this file except in compliance with the License.
+    # You may obtain a copy of the License at
+    #
+    #     https://www.apache.org/licenses/LICENSE-2.0
+    #
+    # Unless required by applicable law or agreed to in writing, software
+    # distributed under the License is distributed on an "AS IS" BASIS,
+    # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    # See the License for the specific language governing permissions and
+    # limitations under the License.
 
-deck:
-  spyglass:
-    size_limit: 500000000 # 500MB
-    gcs_browser_prefix: https://pantheon.corp.google.com/storage/browser/
-    # TODO(krzyzacy): no testgrid support yet, consider use k8s.testgrid, or deploy a new testgrid instance
-    # testgrid_config: gs://testgrid/config
-    # testgrid_root: https://testgrid.corp.google.com/
-    lenses:
-      - lens:
-          name: metadata
-        required_files:
-          - started.json|finished.json
-      - lens:
-          name: buildlog
-        required_files:
-          - build-log.txt
-      - lens:
-          name: junit
-        required_files:
-          - artifacts/junit.*\.xml
-    announcement: "The old job viewer, Gubernator, has been deprecated in favour of this page, Spyglass.{{if .ArtifactPath}} For now, the old page is <a href='https://gubernator-internal.googleplex.com/build/{{.ArtifactPath}}'>still available</a>.{{end}} Please send feedback to osp-engprod@google.com."
+    plank:
+      default_decoration_config:
+        utility_images: # using the tag we identified above
+          clonerefs: "gcr.io/k8s-prow/clonerefs:v20190913-fb0db8137"
+          initupload: "gcr.io/k8s-prow/initupload:v20190913-fb0db8137"
+          entrypoint: "gcr.io/k8s-prow/entrypoint:v20190913-fb0db8137"
+          sidecar: "gcr.io/k8s-prow/sidecar:v20190913-fb0db8137"
+        gcs_configuration:
+          bucket: prow-artifacts-subratp2 # the bucket we just made
+          path_strategy: explicit
+        gcs_credentials_secret: gcs-credentials # the secret we just made
+
+    prowjob_namespace: default
+    pod_namespace: test-pods
+    log_level: debug
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2019-09-24T02:36:25Z"
+  name: config
+  namespace: default
+  resourceVersion: "22179"
+  selfLink: /api/v1/namespaces/default/configmaps/config
+  uid: 1aacef22-de74-11e9-8d51-42010a8a00e2
